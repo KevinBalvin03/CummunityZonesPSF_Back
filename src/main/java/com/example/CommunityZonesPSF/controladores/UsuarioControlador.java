@@ -1,8 +1,8 @@
 package com.example.CommunityZonesPSF.controladores;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,44 +14,61 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.CommunityZonesPSF.dtos.UsuarioDTO;
 import com.example.CommunityZonesPSF.modelos.Usuario;
-import com.example.CommunityZonesPSF.servicios.UsuarioServicio;
+import com.example.CommunityZonesPSF.servicios.IUsuarioServicio;
 
 @RestController
-@RequestMapping("/paseoapi/v1/Usuarios")
+@RequestMapping("/paseoapi/v1/usuarios")
 public class UsuarioControlador {
-    //Por cada servicio ofrecido configuro 1 funcion controlador
-    @Autowired
-    UsuarioServicio servicio;
 
-    //Funcion para controlar el guardado
-@PostMapping
-public ResponseEntity<Usuario> controlarGuardado(@RequestBody Usuario datos){
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(this.servicio.guardarUsuarioBD(datos));
-}
+    // Se depende de la interfaz, no de la clase concreta
+    private final IUsuarioServicio servicio;
+
+    public UsuarioControlador(IUsuarioServicio servicio) {
+        this.servicio = servicio;
+    }
+
+    @PostMapping
+    public ResponseEntity<UsuarioDTO> controlarGuardado(@RequestBody Usuario datos) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(this.servicio.guardarUsuarioEnBD(datos));
+    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario>controlarModificado(@RequestBody Usuario datos, @PathVariable UUID id){
+    public ResponseEntity<UsuarioDTO> controlarModificado(@RequestBody Usuario datos, @PathVariable UUID id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.servicio.modificarUsuarioBD(datos,id));
+                .body(this.servicio.modificarUsuarioEnBD(datos, id));
     }
 
-    //Funcion para controlar el borrado
     @DeleteMapping("/{id}")
-    public ResponseEntity<?>controlarBorrado(@PathVariable UUID id){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(this.servicio.eliminarUsuarioEnBD(id));
+    public ResponseEntity<Void> controlarBorrado(@PathVariable UUID id) {
+        this.servicio.eliminarUsuarioEnBD(id);
+        return ResponseEntity.noContent().build(); // 204, sin cuerpo
     }
-    //Funcoion para controlar el listar 
-    //Dentro de las <> deberia ir los DTO 
+
     @GetMapping
-    public ResponseEntity<?>controlarListado(){
+    public ResponseEntity<List<UsuarioDTO>> controlarListado() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.servicio.buscarUsuariosBD());
+                .body(this.servicio.buscarUsuariosEnBD());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> controlarBusquedaPorId(@PathVariable UUID id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.servicio.buscarUsuarioPorId(id));
+    }
+
+    // Login: recibe {"email": "...", "password": "..."}
+    // 200 con el usuario (sin contraseña) o 401 si no coinciden
+    @PostMapping("/login")
+    public ResponseEntity<UsuarioDTO> controlarLogin(@RequestBody Usuario datos) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.servicio.iniciarSesion(datos));
     }
 }

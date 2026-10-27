@@ -2,7 +2,11 @@ package com.example.CommunityZonesPSF.modelos;
 
 import java.util.UUID;
 
+import com.example.CommunityZonesPSF.enums.Rol;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +22,21 @@ public class Usuario {
     private String name;
     private String email;
     private String password;
-    private String rol;
+
+    // STRING guarda el rol como texto ("ADMINISTRADOR") en vez de un número (0, 1)
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
+    public Usuario() {
+    }
+
+    public Usuario(UUID id, String name, String email, String password, Rol rol) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.rol = rol;
+    }
 
     public UUID getId() {
         return id;
@@ -44,10 +62,10 @@ public class Usuario {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getRol() {
+    public Rol getRol() {
         return rol;
     }
-    public void setRol(String rol) {
+    public void setRol(Rol rol) {
         this.rol = rol;
     }
 }

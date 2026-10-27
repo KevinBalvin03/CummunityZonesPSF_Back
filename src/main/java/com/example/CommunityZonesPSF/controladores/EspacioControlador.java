@@ -1,8 +1,8 @@
 package com.example.CommunityZonesPSF.controladores;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,42 +14,51 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.CommunityZonesPSF.dtos.EspacioDTO;
 import com.example.CommunityZonesPSF.modelos.Espacio;
-import com.example.CommunityZonesPSF.servicios.EspacioServicio;
+import com.example.CommunityZonesPSF.servicios.IEspacioServicio;
 
 @RestController
-@RequestMapping("/paseoapi/v1/Espacio")
+@RequestMapping("/paseoapi/v1/espacios")
 public class EspacioControlador {
 
-    @Autowired
-    EspacioServicio servicio;
+    private final IEspacioServicio servicio;
+
+    public EspacioControlador(IEspacioServicio servicio) {
+        this.servicio = servicio;
+    }
 
     @PostMapping
-    public ResponseEntity<Espacio> controlarGuardado(@RequestBody Espacio informacion) {
+    public ResponseEntity<EspacioDTO> controlarGuardado(@RequestBody Espacio datos) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(this.servicio.guardarEspacioBD(informacion));
+                .body(this.servicio.guardarEspacioEnBD(datos));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Espacio>controlarModificado(@RequestBody Espacio informacion, @PathVariable UUID id){
+    public ResponseEntity<EspacioDTO> controlarModificado(@RequestBody Espacio datos, @PathVariable UUID id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.servicio.modificaEspacioBD(informacion, id));
+                .body(this.servicio.modificarEspacioEnBD(datos, id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?>controlarBorrado(@PathVariable UUID id){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(this.servicio.eliminaEspacioBD(id));
+    public ResponseEntity<Void> controlarBorrado(@PathVariable UUID id) {
+        this.servicio.eliminarEspacioEnBD(id);
+        return ResponseEntity.noContent().build(); // 204
     }
-    //Funcoion para controlar el listar 
-    //Dentro de las <> deberia ir los DTO 
+
     @GetMapping
-    public ResponseEntity<?>controlarListado(){
+    public ResponseEntity<List<EspacioDTO>> controlarListado() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.servicio.buscarEspaciosBD());
+                .body(this.servicio.buscarEspaciosEnBD());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EspacioDTO> controlarBusquedaPorId(@PathVariable UUID id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(this.servicio.buscarEspacioPorId(id));
     }
 }
